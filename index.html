@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>为什么你也应该看看这场 AI 对话？</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      overflow-x: hidden;
+      line-height: 1.8;
+    }
+
+    /* 星空背景 */
+    .stars {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      background: white;
+      animation: twinkle var(--dur) ease-in-out infinite alternate;
+    }
+    @keyframes twinkle {
+      0% { opacity: 0.2; transform: scale(1); }
+      100% { opacity: 1; transform: scale(1.5); }
+    }
+
+    /* 进度条 */
+    .progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+      z-index: 1000;
+      transition: width 0.1s;
+      box-shadow: 0 0 10px rgba(102,126,234,0.7);
+    }
+
+    /* 主容器 */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* 英雄区 */
+    .hero {
+      text-align: center;
+      padding: 60px 0 40px;
+      opacity: 0;
+      animation: fadeUp 1s ease forwards;
+      animation-delay: 0.3s;
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 20px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(102,126,234,0.2), rgba(118,75,162,0.2));
+      border: 1px solid rgba(102,126,234,0.4);
+      color: #a5b4fc;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 700;
+      line-height: 1.3;
+      background: linear-gradient(135deg, #667eea 0%, #f093fb 50%, #fed7e2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+    .hero .subtitle {
+      font-size: 16px;
+      color: #94a3b8;
+      font-weight: 300;
+    }
+    .hero .divider {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #667eea, #f093fb);
+      margin: 28px auto;
+      border-radius: 2px;
+    }
+
+    /* 打字机效果 */
+    .typewriter {
+      overflow: hidden;
+      border-right: 2px solid #667eea;
+      white-space: nowrap;
+      margin: 0 auto;
+      animation: typing 3s steps(30) 1s forwards, blink 0.7s step-end infinite;
+      width: 0;
+      font-size: 15px;
+      color: #a5b4fc;
+    }
+    @keyframes typing { from { width: 0; } to { width: 100%; } }
+    @keyframes blink { 50% { border-color: transparent; } }
+
+    /* 通用动画 */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* 卡片样式 */
+    .card {
+      background: linear-gradient(135deg, rgba(30,30,60,0.8), rgba(20,20,50,0.9));
+      border: 1px solid rgba(102,126,234,0.2);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 28px 0;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(102,126,234,0.15);
+      border-color: rgba(102,126,234,0.5);
+    }
+
+    /* 引言块 */
+    .quote-block {
+      position: relative;
+      padding: 28px 32px;
+      margin: 28px 0;
+      background: linear-gradient(135deg, rgba(102,126,234,0.08), rgba(240,147,251,0.08));
+      border-left: 4px solid transparent;
+      border-image: linear-gradient(180deg, #667eea, #f093fb) 1;
+      border-radius: 0 12px 12px 0;
+      font-style: italic;
+      color: #c4b5fd;
+      font-size: 15px;
+      line-height: 1.9;
+    }
+    .quote-block::before {
+      content: "💬";
+      position: absolute;
+      top: -12px;
+      left: 20px;
+      font-size: 24px;
+      font-style: normal;
+    }
+
+    /* 数字亮点 */
+    .highlight-number {
+      display: inline-block;
+      font-size: 36px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea, #f093fb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+
+    /* 观点列表 */
+    .point-list {
+      list-style: none;
+      padding: 0;
+    }
+    .point-list li {
+      padding: 16px 0 16px 40px;
+      position: relative;
+      border-bottom: 1px solid rgba(102,126,234,0.1);
+      transition: padding-left 0.3s ease;
+    }
+    .point-list li:hover {
+      padding-left: 48px;
+    }
+    .point-list li:last-child { border-bottom: none; }
+    .point-list li .icon {
+      position: absolute;
+      left: 0;
+      top: 16px;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      background: linear-gradient(135deg, rgba(102,126,234,0.2), rgba(240,147,251,0.2));
+    }
+    .point-list li strong {
+      color: #c4b5fd;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .point-list li span {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    /* 标签 */
+    .tag {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin: 4px 4px 4px 0;
+      letter-spacing: 0.5px;
+    }
+    .tag-purple { background: rgba(102,126,234,0.2); color: #a5b4fc; border: 1px solid rgba(102,126,234,0.3); }
+    .tag-pink { background: rgba(240,147,251,0.2); color: #f0abfc; border: 1px solid rgba(240,147,251,0.3); }
+    .tag-green { background: rgba(74,222,128,0.15); color: #86efac; border: 1px solid rgba(74,222,128,0.3); }
+
+    /* CTA 按钮 */
+    .cta-section {
+      text-align: center;
+      padding: 48px 0;
+    }
+    .cta-btn {
+      display: inline-block;
+      padding: 16px 48px;
+      border-radius: 50px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: 1px;
+      transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 8px 32px rgba(102,126,234,0.3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .cta-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 48px rgba(102,126,234,0.5);
+      animation: none;
+    }
+
+    /* 人物介绍 */
+    .person-card {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding: 20px;
+      border-radius: 12px;
+      background: rgba(102,126,234,0.05);
+      margin: 12px 0;
+      transition: background 0.3s;
+    }
+    .person-card:hover { background: rgba(102,126,234,0.1); }
+    .person-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, rgba(102,126,234,0.3), rgba(240,147,251,0.3));
+    }
+    .person-info h4 { color: #e0e0e0; margin-bottom: 4px; }
+    .person-info p { color: #94a3b8; font-size: 13px; line-height: 1.6; }
+
+    /* 时间线 */
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+      margin: 20px 0;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, #667eea, #f093fb);
+    }
+    .timeline-item {
+      position: relative;
+      padding: 12px 0;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -28px;
+      top: 18px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #667eea;
+      box-shadow: 0 0 8px rgba(102,126,234,0.6);
+    }
+    .timeline-item .time {
+      font-size: 12px;
+      color: #667eea;
+      font-weight: 600;
+    }
+    .timeline-item p {
+      color: #c4b5fd;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    /* 章节标题 */
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 48px 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-title .emoji {
+      font-size: 28px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    /* 普通段落 */
+    p { color: #c4b5fd; font-size: 15px; line-height: 1.9; margin: 12px 0; }
+    strong { color: #e0e0e0; }
+
+    /* 页脚 */
+    .footer {
+      text-align: center;
+      padding: 40px 0 20px;
+      color: #64748b;
+      font-size: 13px;
+      border-top: 1px solid rgba(102,126,234,0.1);
+      margin-top: 48px;
+    }
+
+    /* 响应式 */
+    @media (max-width: 600px) {
+      .container { padding: 24px 16px 60px; }
+      .card { padding: 20px; }
+      .hero h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 星空背景 -->
+<div class="stars" id="stars"></div>
+
+<!-- 阅读进度条 -->
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="container">
+
+  <!-- 英雄区 -->
+  <div class="hero">
+    <div class="hero-badge">🎧 播客推荐 · 全员共学</div>
+    <h1>为什么你也应该看看<br>这场 AI 对话？</h1>
+    <p class="subtitle">张小珺 × 罗福莉 · 3.5 小时深度访谈</p>
+    <div class="divider"></div>
+    <div class="typewriter" style="width:0; animation: typing 3s steps(30) 1.5s forwards, blink 0.7s step-end infinite;">
+      适合：非技术背景 · 好奇心驱动 · 15分钟阅读
+    </div>
+  </div>
+
+  <!-- 第一节：这是谁 -->
+  <div class="section-title reveal">
+    <span class="emoji">🎙️</span>
+    <span>先认识一下两位主角</span>
+  </div>
+
+  <div class="reveal">
+    <div class="person-card">
+      <div class="person-avatar">🎤</div>
+      <div class="person-info">
+        <h4>张小珺</h4>
+        <p>商业访谈主持人，以高质量、高密度对话著称。她擅长用通俗语言拆解复杂商业与技术话题，让非技术听众也能听懂 AI 前沿。</p>
+      </div>
+    </div>
+    <div class="person-card">
+      <div class="person-avatar">🤖</div>
+      <div class="person-info">
+        <h4>罗福莉</h4>
+        <p>1995 年生，北师大本科、北大硕士。前阿里达摩院核心研究员，DeepSeek V2 关键开发者。2024 年底被雷军以千万年薪挖到小米，出任 MiMo 大模型负责人。这是她<strong>首次</strong>接受长时间深度访谈。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第二节：为什么非技术同事要看 -->
+  <div class="section-title reveal">
+    <span class="emoji">💡</span>
+    <span>这不是一场技术讲座</span>
+  </div>
+
+  <div class="card reveal">
+    <p>很多人听到"大模型"、"Agent"、"后训练"这些词就头大，觉得这是工程师的事——</p>
+    <p><strong>但其实，这场对话最精彩的部分，恰恰和代码无关。</strong></p>
+    <div style="height:16px;"></div>
+    <ul class="point-list">
+      <li>
+        <span class="icon">🌍</span>
+        <strong>AI 将如何改变每个人的工作？</strong>
+        <span>罗福莉判断：两年内 AGI 实现，生产力将在今年大爆发，大量工作将被重新定义。</span>
+      </li>
+      <li>
+        <span class="icon">🧠</span>
+        <strong>人的价值在哪里？</strong>
+        <span>当 AI 能在几秒内给出一万个标准答案，"提出好问题"的能力才是真正稀缺的。</span>
+      </li>
+      <li>
+        <span class="icon">🎓</span>
+        <strong>教育背景还重要吗？</strong>
+        <span>罗福莉公开说：我只招大二大三的本科生，因为他们的思想还没有被"禁锢"。</span>
+      </li>
+      <li>
+        <span class="icon">🚀</span>
+        <strong>如何保持竞争力？</strong>
+        <span>不是学更多的知识，而是保持好奇心、敢于探索、用开放的心态拥抱新工具。</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 第三节：最炸裂的观点 -->
+  <div class="section-title reveal">
+    <span class="emoji">🔥</span>
+    <span>几个让你睡不着觉的判断</span>
+  </div>
+
+  <div class="reveal">
+    <div class="quote-block">
+      "我现在反而招人，会慢慢倾斜到去招更多潜质的本科生，我们会去招大二大三的人。因为他们的灵活性和适应程度，都感觉没有被污染，他的思想还没有被禁锢的感觉。"
+      <br><br>
+      <span style="font-size:13px; color:#64748b; font-style:normal;">—— 罗福莉，谈招聘理念</span>
+    </div>
+  </div>
+
+  <div class="card reveal">
+    <div style="display:flex; gap:24px; flex-wrap:wrap;">
+      <div style="flex:1; min-width:200px;">
+        <div class="highlight-number">2~3</div>
+        <p style="font-size:14px; color:#94a3b8; margin-top:4px;">个月<br><span style="color:#64748b;">中国大模型与美国的代差</span></p>
+      </div>
+      <div style="flex:1; min-width:200px;">
+        <div class="highlight-number">2</div>
+        <p style="font-size:14px; color:#94a3b8; margin-top:4px;">年<br><span style="color:#64748b;">AGI（通用人工智能）实现时间</span></p>
+      </div>
+      <div style="flex:1; min-width:200px;">
+        <div class="highlight-number">10×</div>
+        <p style="font-size:14px; color:#94a3b8; margin-top:4px;">倍<br><span style="color:#64748b;">新工具带来的研究效率提升</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="reveal">
+    <div class="quote-block">
+      "AI 能在几秒内给出一万个标准答案，真正稀缺的是'提出原本没人问过的好问题'的能力。我要的不是学得最多的人，而是还没被教'怎么想'的人。"
+      <br><br>
+      <span style="font-size:13px; color:#64748b; font-style:normal;">—— 这也是对我们每个人的提醒</span>
+    </div>
+  </div>
+
+  <!-- 第四节：对我们的启发 -->
+  <div class="section-title reveal">
+    <span class="emoji">🌱</span>
+    <span>对我们的启发</span>
+  </div>
+
+  <div class="card reveal">
+    <p>这场对话最打动我的，不是技术细节，而是罗福莉展现出的一种<strong>极度开放和好奇的状态</strong>：</p>
+    <div style="height:12px;"></div>
+    <div style="border-left:3px solid #667eea; padding-left:20px; margin:16px 0;">
+      <p>🔹 <strong>无层级、无 deadline 的团队</strong>——她去掉所有职级，让每个人平等贡献智慧。</p>
+      <p>🔹 <strong>不在乎学历和背景</strong>——核心标准是好奇心、热爱和基础能力。</p>
+      <p>🔹 <strong>主动拥抱新工具</strong>——她要求团队所有人使用最新 AI 工具，用新范式重塑工作方式。</p>
+      <p>🔹 <strong>容忍模糊和失败</strong>——训练 1T 模型遇到稳定性问题，宁可停 1~2 周排查，也不盲目赶节点。</p>
+    </div>
+    <div style="height:12px;"></div>
+    <p>这些品质，<strong>和是不是技术出身毫无关系</strong>。任何岗位、任何背景的人，都可以问自己：</p>
+    <div style="height:8px;"></div>
+    <p>💬 我上一次主动学一个新工具，是什么时候？</p>
+    <p>💬 我遇到不熟悉的事物，是好奇还是回避？</p>
+    <p>💬 我是在重复已知，还是在探索未知？</p>
+  </div>
+
+  <!-- 第五节：如何观看 -->
+  <div class="section-title reveal">
+    <span class="emoji">📺</span>
+    <span>如何观看（不用看完 3.5 小时）</span>
+  </div>
+
+  <div class="card reveal">
+    <p>完整视频在 B 站，但如果你时间有限，可以这样看：</p>
+    <div style="height:12px;"></div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="time">⏱ 0:00 ~ 30:00</div>
+        <p>罗福莉的个人经历，从阿里到达摩院到 DeepSeek 到小米的故事</p>
+      </div>
+      <div class="timeline-item">
+        <div class="time">⏱ 约 1:00:00 处</div>
+        <p>AI 范式巨变的核心判断——为什么是现在？每个人都应该听听</p>
+      </div>
+      <div class="timeline-item">
+        <div class="time">⏱ 约 2:00:00 处</div>
+        <p>团队管理哲学与招聘理念——"只招大二大三"的完整论述</p>
+      </div>
+      <div class="timeline-item">
+        <div class="time">⏱ 任意碎片时间</div>
+        <p>打开音频模式，当播客听。信息密度极高，开车/散步时听也很过瘾</p>
+      </div>
+    </div>
+    <div style="height:16px;"></div>
+    <p style="font-size:14px; color:#64748b;">📎 视频链接：<a href="https://www.bilibili.com/video/BV1iVoVBgERD" style="color:#a5b4fc;" target="_blank">B站 - 张小珺对话罗福莉</a></p>
+    <p style="font-size:14px; color:#64748b;">📎 文字版：搜索「张小珺 罗福莉 语言即世界」（微信公众号）</p>
+  </div>
+
+  <!-- 标签区 -->
+  <div class="reveal" style="margin-top:32px; text-align:center;">
+    <span class="tag tag-purple">#AI时代</span>
+    <span class="tag tag-pink">#好奇心</span>
+    <span class="tag tag-green">#终身成长</span>
+    <span class="tag tag-purple">#拥抱变化</span>
+    <span class="tag tag-pink">#非技术必看</span>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section reveal">
+    <p style="color:#94a3b8; margin-bottom:24px; font-size:15px;">
+      周末抽出一小时，打开这场对话。<br>
+      不是为了学技术，而是为了<strong style="color:#c4b5fd;">看见变化、保持好奇、不做被"禁锢"的人</strong>。
+    </p>
+    <a class="cta-btn" href="https://www.bilibili.com/video/BV1iVoVBgERD" target="_blank">
+      🎬 去看完整访谈 →
+    </a>
+  </div>
+
+  <div class="footer">
+    <p>由 WorkBuddy AI 整理推荐 · 内容来源：张小珺商业访谈录 · 2026.05</p>
+    <p style="margin-top:8px;">💜 保持好奇，拥抱变化，我们一起前行</p>
+  </div>
+
+</div>
+
+<script>
+  // 星空背景生成
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 120; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    star.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%; top:${Math.random()*100}%;
+      --dur:${Math.random()*3+2}s;
+      animation-delay:${Math.random()*3}s;
+      opacity:${Math.random()*0.5+0.2};
+    `;
+    starsEl.appendChild(star);
+  }
+
+  // 滚动显示动画
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  reveals.forEach(el => observer.observe(el));
+
+  // 阅读进度条
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+  });
+
+  // 数字动画
+  const nums = document.querySelectorAll('.highlight-number');
+  const numObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animation = 'fadeIn 0.6s ease forwards';
+        numObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  nums.forEach(el => numObserver.observe(el));
+</script>
+
+</body>
+</html>
